@@ -1,4 +1,6 @@
 node_modules
 commands_to_run.md
 
+db/**/*.*
+
 *.log
