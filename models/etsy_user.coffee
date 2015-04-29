@@ -33,7 +33,6 @@ EtsyUser = sequelize.define 'etsy_user',
 ,
   underscored: true
   classMethods: {}
-
   instanceMethods:
     toJSON: () -> _.omit this.get(), EtsyUser.restricted_attrs
 
