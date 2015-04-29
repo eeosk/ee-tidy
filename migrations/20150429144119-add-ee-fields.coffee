@@ -13,6 +13,7 @@ module.exports =
         sent_at:            type: DataTypes.DATE
         message_id:         type: DataTypes.INTEGER
         has_contact_info:   type: DataTypes.BOOLEAN,  allowNull: false, defaultValue: false
+        etsy_meta:          type: DataTypes.JSON
         created_at:         type: DataTypes.DATE
         updated_at:         type: DataTypes.DATE
       }, {
