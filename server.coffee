@@ -1,7 +1,7 @@
 switch process.env.NODE_ENV
   when 'production' then require 'newrelic'
-  when 'test' then process.env.PORT = 5555
-  else process.env.NODE_ENV = 'development'; process.env.PORT = 5000
+  when 'test' then process.env.PORT = 7777
+  else process.env.NODE_ENV = 'development'; process.env.PORT = 7000
 
 Hapi          = require 'hapi'
 Good          = require 'good'
