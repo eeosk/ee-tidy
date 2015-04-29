@@ -1,0 +1,19 @@
+{
+  "production": {
+    "use_env_variable": "DATABASE_URL"
+  },
+  "development": {
+    "username": "tyler",
+    "password": null,
+    "database": "ee_tidy",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "tyler",
+    "password": null,
+    "database": "ee_db_test",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}
