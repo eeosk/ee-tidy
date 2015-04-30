@@ -36,7 +36,7 @@ if process.env.SEED_LEADS is 'true'
   ## Hourly tasks
   n = if !!process.env.SEED_OFFSET then parseInt(process.env.SEED_OFFSET) else 0
   deferreds = []
-  batch_size = 1000
+  batch_size = 100
   intervalTask = () ->
     deferreds = []
     EtsyUser.findAll limit: batch_size, offset: n*batch_size, order: 'id DESC'
@@ -52,9 +52,11 @@ if process.env.SEED_LEADS is 'true'
       .catch (err) ->
         console.log '---------------------------------------------------------------------------------------'
         console.log ('CAUGHT AN ERROR AT n = ' + n), err
-      .finally () -> n += 1
+      .finally () ->
+        n += 1
+        setTimeout(intervalTask, 2000)
 
-  setInterval(intervalTask, 12000)
+  intervalTask()
 
 else
   console.log "No DB seed scenario was matched:"
