@@ -56,20 +56,4 @@ server.start_run = (cb) ->
     if cb then cb()
     server.log 'info', 'Server running at: ' + server.info.uri
 
-## Hourly rake tasks
-hourlyRakeTasks = () ->
-  # Reset demoseller once every hour
-  # TODO fix so that resetDemoseller does not throw error if no user found
-  hourlyTasks.resetDemoseller()
-  .then () ->
-    console.log 'reset demoseller at ' + Date.now()
-    # Send email if new users
-    hourlyTasks.emailTeamAboutNewSignups()
-  .then () -> return 'ok'
-  .catch (err) ->
-    console.log 'failed hourly rake task ' + Date.now() + ': ' + err
-    return 'err'
-
-setInterval(hourlyRakeTasks, 3600000)
-
 module.exports = server
