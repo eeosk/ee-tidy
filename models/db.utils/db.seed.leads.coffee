@@ -13,8 +13,7 @@ if process.env.NODE_ENV isnt 'development'
 
 if process.env.SEED_LEADS is 'true'
   ### NODE_ENV=development SEED_LEADS='true' coffee models/db.utils/db.seed.leads.coffee ###
-  # n = if !!process.env.SEED_OFFSET then parseInt(process.env.SEED_OFFSET) else 0
-  n = 0
+  n = if !!process.env.SEED_OFFSET then parseInt(process.env.SEED_OFFSET) else 0
   batch_size = 2500
   process_batch = () ->
     deferreds = []
