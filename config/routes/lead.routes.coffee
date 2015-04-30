@@ -8,7 +8,7 @@ module.exports = [
     method: 'GET'
     path: '/leads'
     handler: (request, reply) ->
-      Lead.findAll where: { contact_emails: not: null }, limit: 100
+      Lead.findAll where: { contact_urls: not: null }, limit: 100
       .then (leads) -> Routes.found leads, reply
       .catch (err) -> Routes.bad_request(err, reply)
       return
