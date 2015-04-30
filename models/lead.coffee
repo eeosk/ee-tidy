@@ -19,15 +19,15 @@ Lead = sequelize.define 'Lead',
     findOrCreateFromEtsyUser: (etsy_user) ->
       if !etsy_user or !etsy_user.id then return
       Lead.findOrCreate where: { etsy_user_id: etsy_user.id }, defaults: {
-        contact_urls:               etsy_user.inferred_urls
-        contact_emails:             etsy_user.inferred_emails
+        contact_urls:               etsy_user.inferred_urls?.substring(0,1000)
+        contact_emails:             etsy_user.inferred_emails?.substring(0,1000)
         etsy_meta:
           shop_id:                  etsy_user.shop_id
           user_id:                  etsy_user.user_id
           shop_name:                etsy_user.shop_name
           about_story_headline:     etsy_user.about_story_headline
-          about_story:              etsy_user.about_story
-          about_related_links:      etsy_user.about_related_links
+          about_story:              etsy_user.about_story?.substring(0,5000)
+          about_related_links:      etsy_user.about_related_links?.substring(0,1000)
           profile_image_url_75x75:  etsy_user.profile_image_url_75x75
           profile_bio:              etsy_user.profile_bio
           profile_gender:           etsy_user.profile_gender
