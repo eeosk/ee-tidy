@@ -1,3 +1,4 @@
+sequelize   = require '../../config/sequelize/setup'
 _           = require 'lodash'
 Promise     = require 'bluebird'
 
@@ -12,48 +13,27 @@ if process.env.NODE_ENV isnt 'development'
   return
 
 if process.env.SEED_LEADS is 'true'
-  ### NODE_ENV=development SEED_LEADS='true' SEED_OFFSET=8 coffee models/db.utils/db.seed.leads.coffee ###
-  # n = if !!process.env.SEED_OFFSET then parseInt(process.env.SEED_OFFSET) else 0
-  # batch_size = 1000
-  # process_batch = () ->
-  #   deferreds = []
-  #   EtsyUser.findAll limit: batch_size, offset: n*batch_size, order: 'id DESC'
-  #     .then (etsy_users) ->
-  #       if !etsy_users or etsy_users.length < 1 then return Promise.resolve 'Finished'
-  #       deferreds.push(Lead.findOrCreateFromEtsyUser(etsy_user)) for etsy_user in etsy_users
-  #       Promise.all deferreds
-  #     .then (res) ->
-  #       console.log '---------------------------------------------------------------------------------------'
-  #       console.log 'finished ' + res.length + ' records (offset: ' + n + '): ' + _.map(res, (lead) -> lead[0]?.id).join(', ')
-  #       n += 1
-  #       process_batch()
-  #
-  # process_batch()
-  # .then (res) -> console.log 'done'
-  # .catch (err) -> console.log 'error', err
-  # .finally () -> process.kill()
-
-  ## Hourly tasks
-  n = if !!process.env.SEED_OFFSET then parseInt(process.env.SEED_OFFSET) else 0
+  ### NODE_ENV=development SEED_LEADS='true' coffee models/db.utils/db.seed.leads.coffee ###
+  etsy_users = []
   deferreds = []
-  batch_size = 100
+  batch_size = 200
   intervalTask = () ->
     deferreds = []
-    EtsyUser.findAll limit: batch_size, offset: n*batch_size, order: 'id DESC'
-      .then (etsy_users) ->
+    sequelize.query 'SELECT * FROM "etsy_users" WHERE id NOT IN(SELECT etsy_user_id FROM "Leads") LIMIT ' + batch_size + ';'
+      .then (res) ->
+        etsy_users = res[0]
         if !etsy_users or etsy_users.length < 1
-          console.log 'Finished at n = ' + n
+          console.log 'Finished'
           process.kill()
         deferreds.push(Lead.findOrCreateFromEtsyUser(etsy_user)) for etsy_user in etsy_users
         Promise.all deferreds
       .then (res) ->
         console.log '---------------------------------------------------------------------------------------'
-        console.log 'finished ' + res.length + ' records starting at ' + res[0][0]?.id + '(offset: ' + n + ')'
+        console.log 'finished ' + res.length + ' records starting at ' + res[0][0]?.id
       .catch (err) ->
         console.log '---------------------------------------------------------------------------------------'
-        console.log ('CAUGHT AN ERROR AT n = ' + n), err
+        console.log 'CAUGHT AN ERROR', err
       .finally () ->
-        n += 1
         setTimeout(intervalTask, 2000)
 
   intervalTask()
