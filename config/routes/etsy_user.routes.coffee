@@ -3,7 +3,7 @@ Routes    = require './route.utils'
 
 module.exports = [
 
-  # ETSY_USER find
+  # ETSY_USER findAll
   {
     method: 'GET'
     path: '/etsy_users'

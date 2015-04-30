@@ -3,6 +3,8 @@ sequelize = require '../config/sequelize/setup.coffee'
 _         = require 'lodash'
 utils     = require './model.utils'
 
+Lead      = sequelize.models.Lead
+
 EtsyUser = sequelize.define 'etsy_user',
 
   shop_id:                  type: Sequelize.INTEGER
