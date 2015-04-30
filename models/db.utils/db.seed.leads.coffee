@@ -12,26 +12,49 @@ if process.env.NODE_ENV isnt 'development'
   return
 
 if process.env.SEED_LEADS is 'true'
-  ### NODE_ENV=development SEED_LEADS='true' coffee models/db.utils/db.seed.leads.coffee ###
+  ### NODE_ENV=development SEED_LEADS='true' SEED_OFFSET=8 coffee models/db.utils/db.seed.leads.coffee ###
+  # n = if !!process.env.SEED_OFFSET then parseInt(process.env.SEED_OFFSET) else 0
+  # batch_size = 1000
+  # process_batch = () ->
+  #   deferreds = []
+  #   EtsyUser.findAll limit: batch_size, offset: n*batch_size, order: 'id DESC'
+  #     .then (etsy_users) ->
+  #       if !etsy_users or etsy_users.length < 1 then return Promise.resolve 'Finished'
+  #       deferreds.push(Lead.findOrCreateFromEtsyUser(etsy_user)) for etsy_user in etsy_users
+  #       Promise.all deferreds
+  #     .then (res) ->
+  #       console.log '---------------------------------------------------------------------------------------'
+  #       console.log 'finished ' + res.length + ' records (offset: ' + n + '): ' + _.map(res, (lead) -> lead[0]?.id).join(', ')
+  #       n += 1
+  #       process_batch()
+  #
+  # process_batch()
+  # .then (res) -> console.log 'done'
+  # .catch (err) -> console.log 'error', err
+  # .finally () -> process.kill()
+
+  ## Hourly tasks
   n = if !!process.env.SEED_OFFSET then parseInt(process.env.SEED_OFFSET) else 0
-  batch_size = 2500
-  process_batch = () ->
+  deferreds = []
+  batch_size = 1000
+  intervalTask = () ->
     deferreds = []
     EtsyUser.findAll limit: batch_size, offset: n*batch_size, order: 'id DESC'
       .then (etsy_users) ->
-        if !etsy_users or etsy_users.length < 1 then return Promise.resolve 'Finished'
+        if !etsy_users or etsy_users.length < 1
+          console.log 'Finished at n = ' + n
+          process.kill()
         deferreds.push(Lead.findOrCreateFromEtsyUser(etsy_user)) for etsy_user in etsy_users
         Promise.all deferreds
       .then (res) ->
         console.log '---------------------------------------------------------------------------------------'
-        console.log 'finished ' + res.length + ' records (offset: ' + n + '): ' + _.map(res, (lead) -> lead[0]?.id).join(', ')
-        n += 1
-        process_batch()
+        console.log 'finished ' + res.length + ' records starting at ' + res[0][0]?.id + '(offset: ' + n + ')'
+      .catch (err) ->
+        console.log '---------------------------------------------------------------------------------------'
+        console.log ('CAUGHT AN ERROR AT n = ' + n), err
+      .finally () -> n += 1
 
-  process_batch()
-  .then (res) -> console.log res
-  .catch (err) -> console.log 'error', err
-  .finally () -> process.kill()
+  setInterval(intervalTask, 12000)
 
 else
   console.log "No DB seed scenario was matched:"
