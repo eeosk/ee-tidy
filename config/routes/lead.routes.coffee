@@ -10,10 +10,8 @@ module.exports = [
     handler: (request, reply) ->
       query   = request.query
       page    = parseInt(request.query?.page) - 1
-      console.log query
       perPage = 100
       offset  = if !!page then page * perPage else 0
-      console.log offset
       Lead.findAndCountAll
         where:
           contact_urls: not: null
@@ -26,5 +24,19 @@ module.exports = [
     config:
       pre: Routes.test_delay
   },
+
+  # LEAD update
+  {
+    method: 'PUT'
+    path: '/leads/{id}'
+    handler: (request, reply) ->
+      Lead.findOne request.params.id
+      .then (lead) -> lead.updateAttributes request.payload
+      .then (res) ->  Routes.found res, reply
+      .catch (err) -> Routes.bad_request(err, reply)
+      return
+    config:
+      pre: Routes.test_delay
+  }
 
 ]
