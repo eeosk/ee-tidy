@@ -38,6 +38,32 @@ if process.env.SEED_LEADS is 'true'
 
   intervalTask()
 
+if process.env.RANDOM_100 is 'true'
+  ### NODE_ENV=development RANDOM_100='true' BATCH='A' coffee models/db.utils/db.seed.leads.coffee ###
+  leads = []
+  deferreds = []
+  sequelize.query 'SELECT * FROM "Leads" WHERE contact_urls like \'%@%\' AND sent_at IS NULL ORDER BY id ASC LIMIT 100;'
+  .then (res) ->
+    leads = res[0]
+    logAndMark = (obj) ->
+      Lead.find where: id: obj.id
+      .then (lead) ->
+        lead.update
+          sent_at: new Date()
+          notes: "Batch " + process.env.BATCH
+    deferreds.push(logAndMark obj) for obj in leads
+    Promise.all deferreds
+  .then (res) ->
+    console.log '---------------------------------------------------------------------------------------'
+    _.map leads, (l) -> console.log(l.id, l.contact_urls)
+    console.log '---------------------------------------------------------------------------------------'
+    console.log 'finished ' + res.length
+  .catch (err) ->
+    console.log '---------------------------------------------------------------------------------------'
+    console.log 'CAUGHT AN ERROR', err
+  .finally () ->
+    process.kill()
+
 else
   console.log "No DB seed scenario was matched:"
   console.log 'NODE_ENV', process.env.NODE_ENV
