@@ -39,23 +39,35 @@ if process.env.SEED_LEADS is 'true'
   intervalTask()
 
 if process.env.RANDOM_100 is 'true'
-  ### NODE_ENV=development RANDOM_100='true' BATCH='A' coffee models/db.utils/db.seed.leads.coffee ###
+  ### NODE_ENV=development RANDOM_100='true' BATCH='2A' coffee models/db.utils/db.seed.leads.coffee ###
   leads = []
   deferreds = []
+
+  logAndMark = (obj) ->
+    Lead.find where: id: obj.id
+    .then (lead) ->
+      lead.update
+        sent_at: new Date()
+        notes: "Batch " + process.env.BATCH
+
+  getEmail = (urls) ->
+    emails = []
+    url_array = urls.split(', ')
+    addEmail = (url) -> if url.indexOf('@') > -1 and url.indexOf('flickr') < 0 then emails.push url
+    addEmail url for url in url_array
+    emails.join(', ')
+
+  printLead = (lead) ->
+    console.log lead.id, getEmail(lead.contact_urls)
+
   sequelize.query 'SELECT * FROM "Leads" WHERE contact_urls like \'%@%\' AND sent_at IS NULL ORDER BY id ASC LIMIT 100;'
   .then (res) ->
     leads = res[0]
-    logAndMark = (obj) ->
-      Lead.find where: id: obj.id
-      .then (lead) ->
-        lead.update
-          sent_at: new Date()
-          notes: "Batch " + process.env.BATCH
     deferreds.push(logAndMark obj) for obj in leads
     Promise.all deferreds
   .then (res) ->
     console.log '---------------------------------------------------------------------------------------'
-    _.map leads, (l) -> console.log(l.id, l.contact_urls)
+    _.map leads, (l) -> printLead l
     console.log '---------------------------------------------------------------------------------------'
     console.log 'finished ' + res.length
   .catch (err) ->
